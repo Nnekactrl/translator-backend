@@ -202,7 +202,7 @@ function generateLicenseKey() {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Payment server running on port ${PORT}`);
-  console.log(`Make sure to set PAYSTACK_SECRET_KEY in .env file`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
