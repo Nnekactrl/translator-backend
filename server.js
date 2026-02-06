@@ -98,7 +98,10 @@ app.get('/api/payment/verify/:reference', async (req, res) => {
     const { reference } = req.params;
 
     if (!reference) {
-      return res.status(400).json({ error: 'Reference required' });
+      return res.status(400).json({ 
+        status: false,
+        error: 'Reference required' 
+      });
     }
 
     const response = await axios.get(
@@ -132,13 +135,25 @@ app.get('/api/payment/verify/:reference', async (req, res) => {
         }
       });
     } else {
-      return res.status(400).json({
+      // Payment still pending or in other state
+      return res.json({
         status: false,
-        message: 'Payment not successful'
+        message: `Payment status: ${response.data.data.status}`,
+        paymentStatus: response.data.data.status
       });
     }
   } catch (error) {
     console.error('Payment verification error:', error.response?.data || error.message);
+    
+    // If it's a 404 or verification failed, don't retry
+    if (error.response?.status === 404) {
+      return res.status(404).json({
+        status: false,
+        error: 'Payment reference not found',
+        details: 'The payment reference is invalid or expired'
+      });
+    }
+    
     res.status(500).json({
       error: 'Failed to verify payment',
       details: error.response?.data?.message || error.message
